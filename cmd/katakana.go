@@ -9,11 +9,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var hiraganaCmd = &cobra.Command{
-	Use:   "hiragana",
-	Short: "Practice hiragana character",
+var katakanaCmd = &cobra.Command{
+	Use:   "katakana",
+	Short: "Practice katakana character",
 	Run: func(cmd *cobra.Command, args []string) {
-		words := db.GetHiraganaCharacters()
+		words := db.GetKatakanaCharacters()
 		word := db.GetRandomCharacter(words)
 		p := tea.NewProgram(db.InitialModel(words, word))
 		if _, err := p.Run(); err != nil {
@@ -24,5 +24,8 @@ var hiraganaCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(hiraganaCmd)
+	rootCmd.AddCommand(katakanaCmd)
 }
+
+
+
