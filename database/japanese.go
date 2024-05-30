@@ -1,9 +1,14 @@
-package db
+package database
 
 import (
+	"encoding/json"
 	"math/rand"
+	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-pg/pg/v10"
 )
 
 var HiraganaTable = `
@@ -42,6 +47,10 @@ var katakanaTable = `
 	ワ wa	ヲ wo	ン n/m	
 `
 
+// var defaultVocabulary = []WordModel{
+// 	{1,"ありがとう","arigatoo","Cảm ơn"},
+// }
+
 func GetHiraganaCharacters() []Word {
 	return getCharacters(HiraganaTable)
 }
@@ -65,10 +74,83 @@ func getCharacters(alphabet string) []Word {
 		for _, phrase := range phrases {
 			word := strings.Split(phrase, " ")
 			if len(word) > 1 {
-				words = append(words, Word{word[0],word[1]})
+				words = append(words, Word{
+					Characters: word[0],
+					Pronunciation: word[1],
+				})
 			}
 		}
 	}
 	return words
 }
 
+func GetVocabularies(db *pg.DB) ([]Word, error) {
+	var words []Word
+	err := db.Model(&words).Select()
+	if err != nil {
+		return nil, err
+	}
+	return words, nil
+}
+
+func GetWords(db *pg.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		words, err := GetVocabularies(db)
+		if err != nil {
+			c.Error(err)
+		}
+		c.JSON(http.StatusOK, words)
+	}
+
+}
+
+func AddWord(db *pg.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		decoder := json.NewDecoder(c.Request.Body)
+		var word Word
+		err := decoder.Decode(&word)
+		if err != nil {
+			c.Error(err)
+		}
+
+		_, err = db.Model(&word).Returning("*").Insert()
+		if err != nil {
+			c.Error(err)
+		}
+		c.JSON(http.StatusCreated, word)
+	}
+}
+
+func UpdateWord(db *pg.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		decoder := json.NewDecoder(c.Request.Body)
+		var word Word
+		err := decoder.Decode(&word)
+		if err != nil {
+			c.Error(err)
+		}
+
+		_, err = db.Model(&word).WherePK().Returning("*").Update()
+		if err != nil {
+			c.Error(err)
+		}
+		c.JSON(http.StatusOK, word)
+	}
+}
+
+func DeleteWord(db *pg.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		decoder := json.NewDecoder(c.Request.Body)
+		var word Word
+		err := decoder.Decode(&word)
+		if err != nil {
+			c.Error(err)
+		}
+
+		_, err = db.Model(&word).WherePK().Returning("*").Delete()
+		if err != nil {
+			c.Error(err)
+		}
+		c.JSON(http.StatusOK, word)
+	}
+}

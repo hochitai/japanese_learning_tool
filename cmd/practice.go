@@ -9,12 +9,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var katakanaCmd = &cobra.Command{
-	Use:   "katakana",
-	Short: "Practice katakana character",
+var practiceCmd = &cobra.Command{
+	Use:   "practice",
+	Short: "Practice japanese vocabulary",
 	Run: func(cmd *cobra.Command, args []string) {
-		words := database.GetKatakanaCharacters()
+		db := database.ConnectDB()
+		defer db.Close()
+
+		words, err := database.GetVocabularies(db)
+		if err != nil {
+			panic(err)
+		}
 		word := database.GetRandomCharacter(words)
+
 		p := tea.NewProgram(database.InitialModel(words, word))
 		if _, err := p.Run(); err != nil {
 			fmt.Printf("Alas, there's been an error: %v", err)
@@ -24,8 +31,5 @@ var katakanaCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(katakanaCmd)
+	rootCmd.AddCommand(practiceCmd)
 }
-
-
-

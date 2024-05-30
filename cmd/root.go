@@ -22,7 +22,6 @@ func Execute() {
 }
 
 func init() {
-	
 	rootCmd.Root().CompletionOptions.DisableDefaultCmd = true
 }
 
