@@ -19,13 +19,6 @@ const (
   dbname   = "learning"
 )
 
-type Word struct {
-	Id 				int    `json:"id"`
-	Characters 		string `json:"characters"`
-	Pronunciation   string `json:"pronunciation"`
-	Meaning			string `json:"meaning"`
-}
-
 func ConnectDB() (*pg.DB) {
 	db := pg.Connect(&pg.Options{
         User: user,

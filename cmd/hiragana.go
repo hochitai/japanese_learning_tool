@@ -5,7 +5,7 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/hochitai/japanese_learning_tool/database"
+	"github.com/hochitai/jpl/database"
 	"github.com/spf13/cobra"
 )
 

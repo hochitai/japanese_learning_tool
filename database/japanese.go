@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -46,6 +47,17 @@ var katakanaTable = `
 	ラ ra	リ ri	ル ru	レ re	ロ ro
 	ワ wa	ヲ wo	ン n/m	
 `
+
+type Word struct {
+	Id 				int    `json:"id"`
+	Characters 		string `json:"characters"`
+	Pronunciation   string `json:"pronunciation"`
+	Meaning			string `json:"meaning"`
+}
+
+func (w *Word) SetId(id int) {
+	w.Id = id
+}
 
 // var defaultVocabulary = []WordModel{
 // 	{1,"ありがとう","arigatoo","Cảm ơn"},
@@ -98,6 +110,8 @@ func GetWords(db *pg.DB) gin.HandlerFunc {
 		words, err := GetVocabularies(db)
 		if err != nil {
 			c.Error(err)
+			c.JSON(http.StatusNotFound, struct{}{})
+			return
 		}
 		c.JSON(http.StatusOK, words)
 	}
@@ -111,11 +125,15 @@ func AddWord(db *pg.DB) gin.HandlerFunc {
 		err := decoder.Decode(&word)
 		if err != nil {
 			c.Error(err)
+			c.JSON(http.StatusBadRequest, struct{}{})
+			return
 		}
 
 		_, err = db.Model(&word).Returning("*").Insert()
 		if err != nil {
 			c.Error(err)
+			c.JSON(http.StatusBadRequest, struct{}{})
+			return
 		}
 		c.JSON(http.StatusCreated, word)
 	}
@@ -123,16 +141,27 @@ func AddWord(db *pg.DB) gin.HandlerFunc {
 
 func UpdateWord(db *pg.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.Error(err)		
+			c.JSON(http.StatusBadRequest, struct{}{})
+			return
+		}
 		decoder := json.NewDecoder(c.Request.Body)
 		var word Word
-		err := decoder.Decode(&word)
+		err = decoder.Decode(&word)
 		if err != nil {
-			c.Error(err)
+			c.Error(err)	
+			c.JSON(http.StatusBadRequest, struct{}{})
+			return
 		}
+		word.SetId(id)
 
 		_, err = db.Model(&word).WherePK().Returning("*").Update()
 		if err != nil {
-			c.Error(err)
+			c.Error(err)	
+			c.JSON(http.StatusBadRequest, struct{}{})
+			return
 		}
 		c.JSON(http.StatusOK, word)
 	}
@@ -140,16 +169,27 @@ func UpdateWord(db *pg.DB) gin.HandlerFunc {
 
 func DeleteWord(db *pg.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.Error(err)	
+			c.JSON(http.StatusBadRequest, struct{}{})
+			return
+		}
 		decoder := json.NewDecoder(c.Request.Body)
 		var word Word
-		err := decoder.Decode(&word)
+		err = decoder.Decode(&word)
 		if err != nil {
-			c.Error(err)
+			c.Error(err)	
+			c.JSON(http.StatusBadRequest, struct{}{})
+			return
 		}
+		word.SetId(id)
 
 		_, err = db.Model(&word).WherePK().Returning("*").Delete()
 		if err != nil {
-			c.Error(err)
+			c.Error(err)	
+			c.JSON(http.StatusBadRequest, struct{}{})
+			return
 		}
 		c.JSON(http.StatusOK, word)
 	}

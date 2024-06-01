@@ -1,4 +1,4 @@
-module github.com/hochitai/japanese_learning_tool
+module github.com/hochitai/jpl
 
 go 1.22.0
 
@@ -18,6 +18,7 @@ require (
 	github.com/charmbracelet/x/windows v0.1.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
+	github.com/dchest/uniuri v1.2.0 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
@@ -30,6 +31,7 @@ require (
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
