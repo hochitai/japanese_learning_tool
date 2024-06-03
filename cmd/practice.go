@@ -13,8 +13,11 @@ var practiceCmd = &cobra.Command{
 	Use:   "practice",
 	Short: "Practice japanese vocabulary",
 	Run: func(cmd *cobra.Command, args []string) {
-		db := database.ConnectDB()
-		defer db.Close()
+		db, err := database.ConnectDB()
+		if err != nil {
+			fmt.Println("Alas, there's been an error: %v", err)
+			os.Exit(1)
+		}
 
 		words, err := database.GetVocabularies(db)
 		if err != nil {

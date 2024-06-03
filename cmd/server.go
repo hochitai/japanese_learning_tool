@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/hochitai/jpl/database"
 	"github.com/spf13/cobra"
@@ -11,8 +14,11 @@ var serverCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Run web application server",
 	Run: func(cmd *cobra.Command, args []string) {
-		db := database.ConnectDB()
-		defer db.Close()
+		db, err := database.ConnectDB()
+		if err != nil {
+			fmt.Println("Alas, there's been an error: %v", err)
+			os.Exit(1)
+		}
 
 		r := gin.Default()
 		r.ForwardedByClientIP = true

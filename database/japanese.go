@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-pg/pg/v10"
+	"gorm.io/gorm"
 )
 
 var HiraganaTable = `
@@ -49,7 +49,7 @@ var katakanaTable = `
 `
 
 type Word struct {
-	Id 				int    `json:"id"`
+	Id 				int    `gorm:"primaryKey" json:"id"`
 	Characters 		string `json:"characters"`
 	Pronunciation   string `json:"pronunciation"`
 	Meaning			string `json:"meaning"`
@@ -96,21 +96,21 @@ func getCharacters(alphabet string) []Word {
 	return words
 }
 
-func GetVocabularies(db *pg.DB) ([]Word, error) {
+func GetVocabularies(db *gorm.DB) ([]Word, error) {
 	var words []Word
-	err := db.Model(&words).Select()
-	if err != nil {
-		return nil, err
+	result := db.Find(&words)
+	if result.Error != nil {
+		return nil, result.Error
 	}
 	return words, nil
 }
 
-func GetWords(db *pg.DB) gin.HandlerFunc {
+func GetWords(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		words, err := GetVocabularies(db)
 		if err != nil {
 			c.Error(err)
-			c.JSON(http.StatusNotFound, struct{}{})
+			c.String(http.StatusInternalServerError, "Can not get vocabulary!")
 			return
 		}
 		c.JSON(http.StatusOK, words)
@@ -118,33 +118,33 @@ func GetWords(db *pg.DB) gin.HandlerFunc {
 
 }
 
-func AddWord(db *pg.DB) gin.HandlerFunc {
+func AddWord(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		decoder := json.NewDecoder(c.Request.Body)
 		var word Word
 		err := decoder.Decode(&word)
 		if err != nil {
 			c.Error(err)
-			c.JSON(http.StatusBadRequest, struct{}{})
+			c.String(http.StatusBadRequest, "Bad request body")
 			return
 		}
 
-		_, err = db.Model(&word).Returning("*").Insert()
-		if err != nil {
-			c.Error(err)
-			c.JSON(http.StatusBadRequest, struct{}{})
+		result := db.Create(&word)
+		if result.Error != nil {
+			c.Error(result.Error)
+			c.String(http.StatusInternalServerError, "Failure! Can not create new word!")
 			return
 		}
 		c.JSON(http.StatusCreated, word)
 	}
 }
 
-func UpdateWord(db *pg.DB) gin.HandlerFunc {
+func UpdateWord(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
 			c.Error(err)		
-			c.JSON(http.StatusBadRequest, struct{}{})
+			c.String(http.StatusBadRequest, "Bad request body")
 			return
 		}
 		decoder := json.NewDecoder(c.Request.Body)
@@ -152,27 +152,27 @@ func UpdateWord(db *pg.DB) gin.HandlerFunc {
 		err = decoder.Decode(&word)
 		if err != nil {
 			c.Error(err)	
-			c.JSON(http.StatusBadRequest, struct{}{})
+			c.String(http.StatusBadRequest, "Bad request body")
 			return
 		}
 		word.SetId(id)
 
-		_, err = db.Model(&word).WherePK().Returning("*").Update()
-		if err != nil {
-			c.Error(err)	
-			c.JSON(http.StatusBadRequest, struct{}{})
+		result := db.Save(&word)
+		if result.Error != nil {
+			c.Error(result.Error)
+			c.String(http.StatusInternalServerError, "Failure! Can not update new word!")
 			return
 		}
 		c.JSON(http.StatusOK, word)
 	}
 }
 
-func DeleteWord(db *pg.DB) gin.HandlerFunc {
+func DeleteWord(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
 			c.Error(err)	
-			c.JSON(http.StatusBadRequest, struct{}{})
+			c.String(http.StatusBadRequest, "Bad request body")
 			return
 		}
 		decoder := json.NewDecoder(c.Request.Body)
@@ -180,15 +180,15 @@ func DeleteWord(db *pg.DB) gin.HandlerFunc {
 		err = decoder.Decode(&word)
 		if err != nil {
 			c.Error(err)	
-			c.JSON(http.StatusBadRequest, struct{}{})
+			c.String(http.StatusBadRequest, "Bad request body")
 			return
 		}
 		word.SetId(id)
 
-		_, err = db.Model(&word).WherePK().Returning("*").Delete()
-		if err != nil {
-			c.Error(err)	
-			c.JSON(http.StatusBadRequest, struct{}{})
+		result := db.Delete(&word)
+		if result.Error != nil {
+			c.Error(result.Error)
+			c.String(http.StatusBadRequest, "Failure! Can not delete new word!")
 			return
 		}
 		c.JSON(http.StatusOK, word)

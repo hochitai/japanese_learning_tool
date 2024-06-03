@@ -7,8 +7,9 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/go-pg/pg/v10"
 	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 const (
@@ -19,14 +20,15 @@ const (
   dbname   = "learning"
 )
 
-func ConnectDB() (*pg.DB) {
-	db := pg.Connect(&pg.Options{
-        User: user,
-		Password: password,
-		Database: dbname,
-		Addr: fmt.Sprintf("%s:%d", host, port),
-    })
-	return db
+func ConnectDB() (*gorm.DB, error) {
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Asia/Shanghai",
+						host, user, password, dbname, port)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
 
 type WordCmdModel struct {
