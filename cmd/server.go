@@ -5,7 +5,9 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hochitai/jpl/database"
+	"github.com/hochitai/jpl/api/handler"
+	"github.com/hochitai/jpl/api/middleware"
+	"github.com/hochitai/jpl/internal/database"
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +18,7 @@ var serverCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		db, err := database.ConnectDB()
 		if err != nil {
-			fmt.Println("Alas, there's been an error: %v", err)
+			fmt.Println("alas, there's been an error: %v", err)
 			os.Exit(1)
 		}
 
@@ -26,16 +28,17 @@ var serverCmd = &cobra.Command{
 		v1 := r.Group("/v1")
 		{
 			// Word
-			v1.GET("/words", database.GetWords(db))
-			v1.POST("/words", database.AddWord(db))
-			v1.PUT("/words/:id", database.UpdateWord(db))
-			v1.DELETE("/words/:id", database.DeleteWord(db))
+			v1.GET("/words", handler.GetWords(db))
+			v1.POST("/words", handler.AddWord(db))
+			v1.PUT("/words/:id", handler.UpdateWord(db))
+			v1.DELETE("/words/:id", handler.DeleteWord(db))
 
 			// User
-			v1.POST("/users/register", database.AddUser(db))
-			v1.POST("/users/login", database.Login(db))
-			v1.PUT("/users/:id", database.UpdateWord(db))
-			v1.DELETE("/users/:id", database.DeleteWord(db))
+			v1.POST("/users/register", handler.AddUser(db))
+			v1.POST("/users/login", handler.Login(db))
+			v1.POST("/users/token", middleware.RefreshToken())
+			v1.PUT("/users/:id", middleware.CheckToken(), handler.UpdateUser(db))
+			v1.DELETE("/users/:id", handler.DeleteUser(db))
 
 		}
 

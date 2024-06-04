@@ -1,4 +1,4 @@
-package database
+package handler
 
 import (
 	"fmt"
@@ -7,38 +7,19 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/hochitai/jpl/internal/model"
 	_ "github.com/lib/pq"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
-const (
-  host     = "localhost"
-  port     = 5432
-  user     = "postgres"
-  password = "123456789"
-  dbname   = "learning"
-)
-
-func ConnectDB() (*gorm.DB, error) {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Asia/Shanghai",
-						host, user, password, dbname, port)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
-}
 
 type WordCmdModel struct {
 	TextInput textinput.Model
-	Words     []Word
-	Word      Word
+	Words     []model.Word
+	Word      model.Word
 	Result    string
 }
 
-func InitialModel(words []Word, word Word) WordCmdModel {
+func InitialModel(words []model.Word, word model.Word) WordCmdModel {
 	ti := textinput.New()
 	ti.Placeholder = "Type a Romaji representation and press enter..."
 	ti.Focus()
@@ -79,7 +60,7 @@ func (m WordCmdModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Result = styleFail.Render("Fail! Correct is: " + m.Word.Pronunciation + " " + m.Word.Meaning)
 			}
 			m.TextInput.Reset()
-			m.Word = GetRandomCharacter(m.Words)
+			m.Word = model.GetRandomCharacter(m.Words)
 		default:
 			m.TextInput, cmd = m.TextInput.Update(msg)
 			return m, cmd

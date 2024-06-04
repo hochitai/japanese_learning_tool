@@ -5,7 +5,8 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/hochitai/jpl/database"
+	"github.com/hochitai/jpl/api/handler"
+	"github.com/hochitai/jpl/internal/model"
 	"github.com/spf13/cobra"
 )
 
@@ -13,9 +14,9 @@ var hiraganaCmd = &cobra.Command{
 	Use:   "hiragana",
 	Short: "Practice hiragana character",
 	Run: func(cmd *cobra.Command, args []string) {
-		words := database.GetHiraganaCharacters()
-		word := database.GetRandomCharacter(words)
-		p := tea.NewProgram(database.InitialModel(words, word))
+		words := model.GetHiraganaCharacters()
+		word := model.GetRandomCharacter(words)
+		p := tea.NewProgram(handler.InitialModel(words, word))
 		if _, err := p.Run(); err != nil {
 			fmt.Printf("Alas, there's been an error: %v", err)
 			os.Exit(1)
