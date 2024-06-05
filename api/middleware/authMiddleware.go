@@ -13,11 +13,12 @@ import (
 func CheckToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := strings.Split(c.Request.Header.Get("Authorization"), " ")[1]
-		_, err :=  service.ValidateToken(token)
+		user, err :=  service.ValidateToken(token)
 		if err != nil {
 			c.String(http.StatusUnauthorized, err.Error())
 			return
 		}
+		c.Set("userInfo", user)
 		c.Next()
 	}
 }
@@ -43,5 +44,17 @@ func RefreshToken() gin.HandlerFunc {
 		userLogin.AccessToken = accessToken
 
 		c.JSON(http.StatusOK, userLogin)
+	}
+}
+
+func CheckTokenAndPermission() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token := strings.Split(c.Request.Header.Get("Authorization"), " ")[1]
+		user, err :=  service.ValidateToken(token)
+		if err != nil || user.Permission != "admin" {
+			c.String(http.StatusUnauthorized, "You don't have permission to access this!")
+			return
+		}
+		c.Next()
 	}
 }

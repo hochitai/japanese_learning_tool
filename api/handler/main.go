@@ -70,7 +70,6 @@ func (m WordCmdModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m WordCmdModel) View() string {
-
 	style := lipgloss.NewStyle().
 			Bold(true).
 			Foreground(lipgloss.Color("#66b3ff"))

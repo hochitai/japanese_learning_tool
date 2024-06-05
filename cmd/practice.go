@@ -17,7 +17,7 @@ var practiceCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		db, err := database.ConnectDB()
 		if err != nil {
-			fmt.Println("alas, there's been an error: %v", err)
+			fmt.Printf("alas, there's been an error: %v", err)
 			os.Exit(1)
 		}
 

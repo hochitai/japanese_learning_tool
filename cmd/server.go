@@ -18,7 +18,7 @@ var serverCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		db, err := database.ConnectDB()
 		if err != nil {
-			fmt.Println("alas, there's been an error: %v", err)
+			fmt.Printf("alas, there's been an error: %v", err)
 			os.Exit(1)
 		}
 
@@ -35,10 +35,14 @@ var serverCmd = &cobra.Command{
 
 			// User
 			v1.POST("/users/register", handler.AddUser(db))
+			v1.POST("/users/admin", middleware.CheckTokenAndPermission(), handler.AddAdmin(db))
 			v1.POST("/users/login", handler.Login(db))
 			v1.POST("/users/token", middleware.RefreshToken())
 			v1.PUT("/users/:id", middleware.CheckToken(), handler.UpdateUser(db))
-			v1.DELETE("/users/:id", handler.DeleteUser(db))
+			v1.DELETE("/users/:id", middleware.CheckTokenAndPermission(), handler.DeleteUser(db))
+
+			//Admin
+			v1.GET("/admin/users", middleware.CheckTokenAndPermission(), handler.GetUsers(db))
 
 		}
 

@@ -17,7 +17,7 @@ func GetWords(db *gorm.DB) gin.HandlerFunc {
 		words, err := wordModel.GetVocabularies(db)
 		if err != nil {
 			c.Error(err)
-			c.String(http.StatusInternalServerError, "Can not get vocabulary!")
+			c.String(http.StatusInternalServerError, "Can not get vocabularies!")
 			return
 		}
 		c.JSON(http.StatusOK, words)
@@ -68,7 +68,7 @@ func UpdateWord(db *gorm.DB) gin.HandlerFunc {
 		err = word.UpdateWord(db)
 		if err != nil {
 			c.Error(err)
-			c.String(http.StatusInternalServerError, "Failure! Can not update new word!")
+			c.String(http.StatusInternalServerError, "Failure! Can not update word!")
 			return
 		}
 		c.JSON(http.StatusOK, word)
@@ -83,20 +83,13 @@ func DeleteWord(db *gorm.DB) gin.HandlerFunc {
 			c.String(http.StatusBadRequest, "Bad request body")
 			return
 		}
-		decoder := json.NewDecoder(c.Request.Body)
 		var word model.Word
-		err = decoder.Decode(&word)
-		if err != nil {
-			c.Error(err)	
-			c.String(http.StatusBadRequest, "Bad request body")
-			return
-		}
 		word.SetId(id)
 
 		err = word.DeleteWord(db)
 		if err != nil {
 			c.Error(err)
-			c.String(http.StatusBadRequest, "Failure! Can not delete new word!")
+			c.String(http.StatusBadRequest, "Failure! Can not delete word!")
 			return
 		}
 		c.JSON(http.StatusOK, word)

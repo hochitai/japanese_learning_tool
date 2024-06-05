@@ -6,14 +6,16 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/hochitai/jpl/internal/model"
 )
 
-func CreateToken(username string, duration int64) (string, error) {
+func CreateToken(user model.User, duration int64) (string, error) {
 	secretKey := []byte(os.Getenv("SECRET_KEY"))
 
 	// Create a new token object, specifying signing method and the claims
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": username,                         // Subject (user identifier)
+		"sub": user.Id,                         // Subject (user identifier)
+		"per": user.Permission,					// Permission
 		"iss": "login",                          // Issuer
 		"exp": duration, // Expiration time
 		"iat": time.Now().Unix(),                // Issued at
@@ -27,8 +29,9 @@ func CreateToken(username string, duration int64) (string, error) {
 	return tokenString, nil
 }
 
-func ValidateToken(tokenStr string) (string, error) {
+func ValidateToken(tokenStr string) (model.User, error) {
 	secretKey := []byte(os.Getenv("SECRET_KEY"))
+	var user model.User
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -39,22 +42,22 @@ func ValidateToken(tokenStr string) (string, error) {
 		return secretKey, nil
 	})
 	if err != nil {
-		return "", fmt.Errorf("token incorrect")
+		return user, fmt.Errorf("token incorrect")
 	}
 
-	var username string
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		username = claims["sub"].(string)
+		user.Id = int(claims["sub"].(float64))
+		user.Permission = claims["per"].(string)
 	} 
-	return username, nil
+	return user, nil
 }
 
 func RefreshToken(tokenStr string) (string, error) {
-	username, err := ValidateToken(tokenStr);
+	user, err := ValidateToken(tokenStr);
 	if err != nil {
 		return "", err
 	}
-	token, err := CreateToken(username, time.Now().Add(time.Hour).Unix())
+	token, err := CreateToken(user, time.Now().Add(time.Hour).Unix())
 	if err != nil {
 		return "", err
 	}
