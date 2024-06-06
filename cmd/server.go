@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/hochitai/jpl/api/handler"
 	"github.com/hochitai/jpl/api/middleware"
@@ -25,6 +26,16 @@ var serverCmd = &cobra.Command{
 		r := gin.Default()
 		r.ForwardedByClientIP = true
 		r.SetTrustedProxies([]string{"127.0.0.1"})
+		r.LoadHTMLGlob("web/templates/*")
+
+		config := cors.DefaultConfig()
+  		config.AllowOrigins = []string{"http://localhost:8080"}
+		r.Use(cors.Default())
+
+		// pages
+		r.GET("/", handler.HomePage(db))
+
+		// v1 rest api
 		v1 := r.Group("/v1")
 		{
 			// Word
@@ -40,6 +51,7 @@ var serverCmd = &cobra.Command{
 			v1.POST("/users/token", middleware.RefreshToken())
 			v1.PUT("/users/:id", middleware.CheckToken(), handler.UpdateUser(db))
 			v1.DELETE("/users/:id", middleware.CheckTokenAndPermission(), handler.DeleteUser(db))
+			v1.POST("/users/verify", handler.Verify(db))
 
 			//Admin
 			v1.GET("/admin/users", middleware.CheckTokenAndPermission(), handler.GetUsers(db))

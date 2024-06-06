@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firebase Google Login</title>
+</head>
+<body>
+    <button id="googleSignIn">Sign In with Google</button>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+        // Add Firebase products that you want to use
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js'
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDmcEDuzQBsOnfF_4nsLrMQV1XpmskHIFw",
+            authDomain: "learning-14748.firebaseapp.com",
+            projectId: "learning-14748",
+            storageBucket: "learning-14748.appspot.com",
+            messagingSenderId: "117044362285",
+            appId: "1:117044362285:web:ebb2ae517420f22f880ca4",
+            measurementId: "G-N1Y0VKHHR0"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const provider = new GoogleAuthProvider();
+
+        document.getElementById('googleSignIn').addEventListener('click', () => {
+            const auth = getAuth();
+            signInWithPopup(auth, provider)
+            .then((result) => {
+                // This gives you a Google Access Token. You can use it to access the Google API.
+                const credential = GoogleAuthProvider.credentialFromResult(result);
+                const token = credential.accessToken;
+                // The signed-in user info.
+                const user = result.user;
+
+                fetch('http://localhost:8080/v1/users/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ user })
+                }).then(response => response.json()).then(data => {
+                    console.log(data);
+                }); 
+                
+
+
+
+            }).catch((error) => {
+                // Handle Errors here.
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                // The email of the user's account used.
+                const email = error.customData.email;
+                // The AuthCredential type that was used.
+                const credential = GoogleAuthProvider.credentialFromError(error);
+                // ...
+            });
+        }); 
+    </script>
+</body>
+</html>
