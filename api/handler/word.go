@@ -36,12 +36,30 @@ func AddWord(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		userInfo := c.MustGet("userInfo").(model.User)
+		if userInfo.Permission == "admin" {
+			word.Level = "public"
+		} else {
+			word.Level = "private"
+		}
+
 		err = word.CreateWord(db)
 		if err != nil {
 			c.Error(err)
 			c.String(http.StatusInternalServerError, "Failure! Can not create new word!")
 			return
 		}
+
+		if userInfo.Permission == "user" {
+			favor := model.Favorite{WordId: word.Id, UserId: userInfo.Id}
+			err = favor.CreateFavorite(db)
+			if err != nil {
+				c.Error(err)
+				c.String(http.StatusInternalServerError, "Failure! Can not create new word!")
+				return
+			}
+		}
+
 		c.JSON(http.StatusCreated, word)
 	}
 }
@@ -92,6 +110,18 @@ func DeleteWord(db *gorm.DB) gin.HandlerFunc {
 			c.String(http.StatusBadRequest, "Failure! Can not delete word!")
 			return
 		}
-		c.JSON(http.StatusOK, word)
+
+		userInfo := c.MustGet("userInfo").(model.User)
+		if userInfo.Permission == "user" {
+			favor := model.Favorite{WordId: word.Id, UserId: userInfo.Id}
+			err = favor.DeleteFavorite(db)
+			if err != nil {
+				c.Error(err)
+				c.String(http.StatusInternalServerError, "Failure! Can not delete favorite word!")
+				return
+			}
+		}
+
+		c.String(http.StatusOK, "Delete successfully favorite word!")
 	}
 }

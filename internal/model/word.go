@@ -14,6 +14,7 @@ type Word struct {
 	Characters    string `json:"characters"`
 	Pronunciation string `json:"pronunciation"`
 	Meaning       string `json:"meaning"`
+	Level 		  string `json:"-"`
 }
 
 func (w *Word) SetId(id int) {
@@ -29,7 +30,7 @@ func (word *Word) CreateWord(db *gorm.DB) error {
 }
 
 func (word *Word) UpdateWord(db *gorm.DB) error {
-	result := db.Save(&word)
+	result := db.Omit("level").Save(&word)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -46,7 +47,7 @@ func (word *Word) DeleteWord(db *gorm.DB) error {
 
 func (word Word) GetVocabularies(db *gorm.DB) ([]Word, error) {
 	var words []Word
-	result := db.Find(&words)
+	result := db.Where("level = ?", "public").Find(&words)
 	if result.Error != nil {
 		return nil, result.Error
 	}

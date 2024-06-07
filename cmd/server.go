@@ -40,9 +40,9 @@ var serverCmd = &cobra.Command{
 		{
 			// Word
 			v1.GET("/words", handler.GetWords(db))
-			v1.POST("/words", handler.AddWord(db))
-			v1.PUT("/words/:id", handler.UpdateWord(db))
-			v1.DELETE("/words/:id", handler.DeleteWord(db))
+			v1.POST("/words", middleware.CheckToken(), handler.AddWord(db))
+			v1.PUT("/words/:id", middleware.CheckToken(), handler.UpdateWord(db))
+			v1.DELETE("/words/:id", middleware.CheckToken(), handler.DeleteWord(db))
 
 			// User
 			v1.POST("/users/register", handler.AddUser(db))

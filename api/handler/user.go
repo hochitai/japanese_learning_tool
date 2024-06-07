@@ -177,7 +177,7 @@ func DeleteUser(db *gorm.DB) gin.HandlerFunc {
 			c.String(http.StatusBadRequest, "Failure! Can not delete user!")
 			return
 		}
-		c.JSON(http.StatusOK, user)
+		c.String(http.StatusOK, "Delete successfully favorite word!")
 
 	}
 }

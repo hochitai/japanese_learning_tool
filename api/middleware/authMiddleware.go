@@ -55,6 +55,7 @@ func CheckTokenAndPermission() gin.HandlerFunc {
 			c.String(http.StatusUnauthorized, "You don't have permission to access this!")
 			return
 		}
+		c.Set("userInfo", user)
 		c.Next()
 	}
 }
