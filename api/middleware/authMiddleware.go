@@ -10,15 +10,19 @@ import (
 	"github.com/hochitai/jpl/internal/service"
 )
 
-func CheckToken() gin.HandlerFunc {
+func VerifyToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := strings.Split(c.Request.Header.Get("Authorization"), " ")[1]
-		user, err :=  service.ValidateToken(token)
-		if err != nil {
+		user, err :=  service.CheckToken(token)
+		user1, err1 :=  service.CheckFirebaseToken(token)
+		if err != nil && err1 != nil {
 			c.String(http.StatusUnauthorized, err.Error())
 			return
+		} else if err == nil {
+			c.Set("userInfo", user)
+		} else {
+			c.Set("userInfo", user1)
 		}
-		c.Set("userInfo", user)
 		c.Next()
 	}
 }
@@ -47,10 +51,10 @@ func RefreshToken() gin.HandlerFunc {
 	}
 }
 
-func CheckTokenAndPermission() gin.HandlerFunc {
+func VerifyTokenAndPermission() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := strings.Split(c.Request.Header.Get("Authorization"), " ")[1]
-		user, err :=  service.ValidateToken(token)
+		user, err :=  service.CheckToken(token)
 		if err != nil || user.Permission != "admin" {
 			c.String(http.StatusUnauthorized, "You don't have permission to access this!")
 			return

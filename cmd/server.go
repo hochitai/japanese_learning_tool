@@ -40,21 +40,20 @@ var serverCmd = &cobra.Command{
 		{
 			// Word
 			v1.GET("/words", handler.GetWords(db))
-			v1.POST("/words", middleware.CheckToken(), handler.AddWord(db))
-			v1.PUT("/words/:id", middleware.CheckToken(), handler.UpdateWord(db))
-			v1.DELETE("/words/:id", middleware.CheckToken(), handler.DeleteWord(db))
+			v1.POST("/words", middleware.VerifyToken(), handler.AddWord(db))
+			v1.PUT("/words/:id", middleware.VerifyToken(), handler.UpdateWord(db))
+			v1.DELETE("/words/:id", middleware.VerifyToken(), handler.DeleteWord(db))
 
 			// User
 			v1.POST("/users/register", handler.AddUser(db))
-			v1.POST("/users/admin", middleware.CheckTokenAndPermission(), handler.AddAdmin(db))
+			v1.POST("/users/admin", middleware.VerifyTokenAndPermission(), handler.AddAdmin(db))
 			v1.POST("/users/login", handler.Login(db))
 			v1.POST("/users/token", middleware.RefreshToken())
-			v1.PUT("/users/:id", middleware.CheckToken(), handler.UpdateUser(db))
-			v1.DELETE("/users/:id", middleware.CheckTokenAndPermission(), handler.DeleteUser(db))
-			v1.POST("/users/verify", handler.Verify(db))
+			v1.PUT("/users/:id", middleware.VerifyToken(), handler.UpdateUser(db))
+			v1.DELETE("/users/:id", middleware.VerifyTokenAndPermission(), handler.DeleteUser(db))
 
 			//Admin
-			v1.GET("/admin/users", middleware.CheckTokenAndPermission(), handler.GetUsers(db))
+			v1.GET("/admin/users", middleware.VerifyTokenAndPermission(), handler.GetUsers(db))
 
 		}
 

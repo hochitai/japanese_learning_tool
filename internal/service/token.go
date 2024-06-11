@@ -1,12 +1,16 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
+	firebase "firebase.google.com/go"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/hochitai/jpl/internal/model"
+	"google.golang.org/api/option"
 )
 
 func CreateToken(user model.User, duration int64) (string, error) {
@@ -29,7 +33,7 @@ func CreateToken(user model.User, duration int64) (string, error) {
 	return tokenString, nil
 }
 
-func ValidateToken(tokenStr string) (model.User, error) {
+func CheckToken(tokenStr string) (model.User, error) {
 	secretKey := []byte(os.Getenv("SECRET_KEY"))
 	var user model.User
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
@@ -53,7 +57,7 @@ func ValidateToken(tokenStr string) (model.User, error) {
 }
 
 func RefreshToken(tokenStr string) (string, error) {
-	user, err := ValidateToken(tokenStr);
+	user, err := CheckToken(tokenStr);
 	if err != nil {
 		return "", err
 	}
@@ -62,4 +66,30 @@ func RefreshToken(tokenStr string) (string, error) {
 		return "", err
 	}
 	return token, nil
+}
+
+func CheckFirebaseToken(tokenStr string) (model.User, error) {
+		var user model.User
+		// Use a service account
+		opt := option.WithCredentialsFile("serviceAccountKey.json")
+		app, err := firebase.NewApp(context.Background(), nil, opt)
+		if err != nil {
+			return user, fmt.Errorf("token incorrect")
+		}
+
+		client, err := app.Auth(context.Background())
+		if err != nil {
+			return user, fmt.Errorf("token incorrect")
+		}
+
+		token, err := client.VerifyIDToken(context.Background(), tokenStr)
+		if err != nil {
+			return user, fmt.Errorf("token incorrect")
+		}
+
+		id, _ := strconv.Atoi(token.UID)
+		user.Id = id
+		user.Permission = "user"
+
+		return user, nil
 }

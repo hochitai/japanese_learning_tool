@@ -1,21 +1,17 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
-	firebase "firebase.google.com/go"
 	"github.com/dchest/uniuri"
 	"github.com/gin-gonic/gin"
 	"github.com/hochitai/jpl/internal/model"
 	"github.com/hochitai/jpl/internal/service"
 	_ "github.com/joho/godotenv/autoload"
-	"google.golang.org/api/option"
 	"gorm.io/gorm"
 )
 
@@ -200,45 +196,5 @@ func HomePage(db *gorm.DB) gin.HandlerFunc {
 		c.HTML(http.StatusOK, "auth.tmpl", gin.H{
 			"title": "Main website",
 		})
-	}
-}
-
-func Verify(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Use a service account
-		opt := option.WithCredentialsFile("serviceAccountKey.json")
-		app, err := firebase.NewApp(context.Background(), nil, opt)
-		if err != nil {
-			c.String(http.StatusBadRequest, err.Error())
-			return
-		}
-
-		client, err := app.Auth(context.Background())
-		if err != nil {
-			log.Fatalf("error getting Auth client: %v\n", err)
-		}
-
-		var request map[string]map[string]interface{}
-
-		if err := json.NewDecoder(c.Request.Body).Decode(&request); err != nil {
-			c.String(http.StatusBadRequest, err.Error())
-			return
-		}
-
-		user := request["user"]
-
-		token, err := client.VerifyIDToken(context.Background(), user["stsTokenManager"].(map[string]interface{})["accessToken"].(string))
-		if err != nil {
-			c.String(http.StatusUnauthorized, err.Error())
-			return
-		}
-
-		response := map[string]interface{}{
-			"uid":     token.UID,
-			"claims":  token.Claims,
-			"message": "User authenticated successfully",
-		}
-
-		c.JSON(http.StatusOK, response)
 	}
 }
