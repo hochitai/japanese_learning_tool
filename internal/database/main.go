@@ -8,8 +8,13 @@ import (
 )
 
 const (
-	host     = "localhost"
-	port     = 5432
+	// host     = "127.0.0.1"
+	// port     = 5432
+
+	// host for run in docker
+	host     = "host.docker.internal"
+	// port database in docker
+	port     = 5438
 	user     = "postgres"
 	password = "123456789"
 	dbname   = "learning"
