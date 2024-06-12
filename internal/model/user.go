@@ -3,7 +3,7 @@ package model
 import "gorm.io/gorm"
 
 type User struct {
-	Id           int    `json:"id,omitempty"`
+	Id           int    `gorm:"primaryKey" json:"id,omitempty"`
 	Username     string `json:"username,omitempty"`
 	Password     string `json:"password,omitempty"`
 	Name         string `json:"name,omitempty"`
