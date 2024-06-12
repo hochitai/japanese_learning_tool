@@ -308,7 +308,7 @@ const docTemplate = `{
         },
         "/v1/words": {
             "get": {
-                "description": "Get words are pulic word",
+                "description": "Get favorite words of current user",
                 "consumes": [
                     "application/json"
                 ],
@@ -318,7 +318,7 @@ const docTemplate = `{
                 "tags": [
                     "words"
                 ],
-                "summary": "Get words",
+                "summary": "Get favorite words",
                 "parameters": [
                     {
                         "type": "string",

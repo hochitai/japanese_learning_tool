@@ -74,6 +74,7 @@ var serverCmd = &cobra.Command{
 			v1.POST("/words", middleware.VerifyToken(), handler.AddWord(db))
 			v1.PUT("/words/:id", middleware.VerifyToken(), handler.UpdateWord(db))
 			v1.DELETE("/words/:id", middleware.VerifyToken(), handler.DeleteWord(db))
+			v1.GET("/words/favorite", middleware.VerifyToken(), handler.GetFavoriteWords(db))
 
 			// User
 			v1.POST("/users/register", handler.AddUser(db))

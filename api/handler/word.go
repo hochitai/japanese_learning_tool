@@ -34,7 +34,31 @@ func GetWords(db *gorm.DB) gin.HandlerFunc {
 		}
 		c.JSON(http.StatusOK, words)
 	}
+}
 
+// GetFavoriteWords godoc
+// @Summary      Get favorite words
+// @Description  Get favorite words of current user
+// @Tags         words
+// @Accept       json
+// @Produce      json
+// @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
+// @Success      200  {object}  []model.Word
+// @Failure      500  {object}  httputil.HTTPError
+// @Router       /v1/words [get]
+func GetFavoriteWords(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userInfo := c.MustGet("userInfo").(model.User)
+		favoriteModel := model.Favorite{UserId: userInfo.Id}
+		words, err := favoriteModel.GetFavorites(db)
+		if err != nil {
+			c.Error(err)
+			// c.String(http.StatusInternalServerError, "Can not get vocabularies!")
+			httputil.NewError(c, http.StatusInternalServerError, err)
+			return
+		}
+		c.JSON(http.StatusOK, words)
+	}
 }
 
 // AddWord godoc
@@ -119,6 +143,30 @@ func UpdateWord(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		word.SetId(id)
+
+		userInfo := c.MustGet("userInfo").(model.User)
+		favoriteModel := model.Favorite{UserId: userInfo.Id}
+		words, err := favoriteModel.GetFavorites(db)
+		if err != nil {
+			c.Error(err)
+			httputil.NewError(c, http.StatusInternalServerError, err)
+			return
+		}
+
+		if userInfo.Permission == "user" {
+			flag := false
+			for _, u := range words {
+				if u.Id == word.Id {
+					flag = true
+					break
+				}
+			}
+			if !flag {
+				httputil.NewError(c ,http.StatusInternalServerError,
+					 fmt.Errorf("failure! You don't have permission to update this word"))
+				return
+			}
+		}
 
 		err = word.UpdateWord(db)
 		if err != nil {
