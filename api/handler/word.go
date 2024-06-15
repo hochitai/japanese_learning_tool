@@ -21,7 +21,7 @@ func (w *Word) LoadAPIRouters(g *gin.RouterGroup, db *gorm.DB) {
 	g.POST("/words", middleware.VerifyToken(), w.AddWord(db))
 	g.PUT("/words/:id", middleware.VerifyToken(), w.UpdateWord(db))
 	g.DELETE("/words/:id", middleware.VerifyToken(), w.DeleteWord(db))
-	g.GET("/words/favorite", middleware.VerifyToken(), w.GetFavoriteWords(db))
+	g.GET("/words/favorites", middleware.VerifyToken(), w.GetFavoriteWords(db))
 }
 
 // GetWords godoc
@@ -57,7 +57,7 @@ func (w *Word) GetWords(db *gorm.DB) gin.HandlerFunc {
 // @Param Authorization header string true "Insert your access token" default(Bearer <Add access token here>)
 // @Success      200  {object}  []model.Word
 // @Failure      500  {object}  httputil.HTTPError
-// @Router       /v1/words [get]
+// @Router       /v1/words/favorites [get]
 func (w *Word) GetFavoriteWords(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userInfo := c.MustGet("userInfo").(model.User)

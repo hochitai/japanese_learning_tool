@@ -308,7 +308,7 @@ const docTemplate = `{
         },
         "/v1/words": {
             "get": {
-                "description": "Get favorite words of current user",
+                "description": "Get words are pulic word",
                 "consumes": [
                     "application/json"
                 ],
@@ -318,7 +318,7 @@ const docTemplate = `{
                 "tags": [
                     "words"
                 ],
-                "summary": "Get favorite words",
+                "summary": "Get words",
                 "parameters": [
                     {
                         "type": "string",
@@ -390,6 +390,48 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/httputil.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/words/favorites": {
+            "get": {
+                "description": "Get favorite words of current user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "words"
+                ],
+                "summary": "Get favorite words",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Word"
+                            }
                         }
                     },
                     "500": {

@@ -9,8 +9,6 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     environment:
       POSTGRES_PASSWORD: 123456789
-    # extra_hosts:
-    #   - host.docker.internal:192.168.1.4
 
   pgadmin:
     image: dpage/pgadmin4
