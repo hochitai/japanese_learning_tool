@@ -10,12 +10,28 @@ import (
 
 	"github.com/dchest/uniuri"
 	"github.com/gin-gonic/gin"
+	"github.com/hochitai/jpl/api/middleware"
 	"github.com/hochitai/jpl/internal/model"
 	"github.com/hochitai/jpl/internal/service"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/swaggo/swag/example/celler/httputil"
 	"gorm.io/gorm"
 )
+
+type User struct {}
+
+func (u *User) LoadAPIRouters(g *gin.RouterGroup, db *gorm.DB) {
+	// User
+	g.POST("/users/register", u.AddUser(db))
+	g.POST("/users/admin", middleware.VerifyTokenAndPermission(), u.AddAdmin(db))
+	g.POST("/users/login", u.Login(db))
+	g.POST("/users/token", middleware.RefreshToken())
+	g.PUT("/users/:id", middleware.VerifyToken(), u.UpdateUser(db))
+	g.DELETE("/users/:id", middleware.VerifyTokenAndPermission(), u.DeleteUser(db))
+
+	//Admin
+	g.GET("/admin/users", middleware.VerifyTokenAndPermission(), u.GetUsers(db))
+}
 
 // AddUser godoc
 // @Summary      Add user
@@ -27,7 +43,7 @@ import (
 // @Success      201  {object}  model.UserResponse
 // @Failure      400  {object}  httputil.HTTPError
 // @Router       /v1/users/register [post]
-func AddUser(db *gorm.DB) gin.HandlerFunc {
+func (u *User) AddUser(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		decoder := json.NewDecoder(c.Request.Body)
 		var user model.User
@@ -69,7 +85,7 @@ func AddUser(db *gorm.DB) gin.HandlerFunc {
 // @Success      201  {object}  model.UserResponse
 // @Failure      400  {object}  httputil.HTTPError
 // @Router       /v1/users/admin [post]
-func AddAdmin(db *gorm.DB) gin.HandlerFunc {
+func (u *User) AddAdmin(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		decoder := json.NewDecoder(c.Request.Body)
 		var user model.User
@@ -111,7 +127,7 @@ func AddAdmin(db *gorm.DB) gin.HandlerFunc {
 // @Failure      400  {object}  httputil.HTTPError
 // @Failure      500  {object}  httputil.HTTPError
 // @Router       /v1/users/login [post]
-func Login(db *gorm.DB) gin.HandlerFunc {
+func (u *User) Login(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		decoder := json.NewDecoder(c.Request.Body)
 		var userLogin model.User
@@ -173,7 +189,7 @@ func Login(db *gorm.DB) gin.HandlerFunc {
 // @Failure      400  {object}  httputil.HTTPError
 // @Failure      500  {object}  httputil.HTTPError
 // @Router       /v1/users/{id} [put]
-func UpdateUser(db *gorm.DB) gin.HandlerFunc {
+func (u *User) UpdateUser(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
@@ -219,7 +235,7 @@ func UpdateUser(db *gorm.DB) gin.HandlerFunc {
 // @Failure      400  {object}  httputil.HTTPError
 // @Failure      500  {object}  httputil.HTTPError
 // @Router       /v1/users/{id} [delete]
-func DeleteUser(db *gorm.DB) gin.HandlerFunc {
+func (u *User) DeleteUser(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
@@ -251,7 +267,7 @@ func DeleteUser(db *gorm.DB) gin.HandlerFunc {
 // @Success      200  {object}  []model.UserResponse
 // @Failure      500  {object}  httputil.HTTPError
 // @Router       /v1/admin/users [get]
-func GetUsers(db *gorm.DB) gin.HandlerFunc {
+func (u *User) GetUsers(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var userModel model.User
 		users, err := userModel.GetUsers(db)
@@ -268,7 +284,7 @@ func GetUsers(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func HomePage(db *gorm.DB) gin.HandlerFunc {
+func (u *User) HomePage(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.HTML(http.StatusOK, "auth.tmpl", gin.H{
 			"title": "Main website",

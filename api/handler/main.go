@@ -7,9 +7,26 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/hochitai/jpl/internal/model"
 	_ "github.com/lib/pq"
 )
+
+type Server struct {}
+
+func (s *Server) DefaultConfiguation() *gin.Engine {
+	r := gin.Default()
+	r.ForwardedByClientIP = true
+	r.SetTrustedProxies([]string{"127.0.0.1"})
+	r.LoadHTMLGlob("web/templates/*")
+
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:8080"}
+	r.Use(cors.Default())
+	return r
+}
+
 
 
 type WordCmdModel struct {

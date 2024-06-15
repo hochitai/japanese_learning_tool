@@ -7,10 +7,22 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hochitai/jpl/api/middleware"
 	"github.com/hochitai/jpl/internal/model"
 	"github.com/swaggo/swag/example/celler/httputil"
 	"gorm.io/gorm"
 )
+
+type Word struct {}
+
+func (w *Word) LoadAPIRouters(g *gin.RouterGroup, db *gorm.DB) {
+	// Word
+	g.GET("/words", w.GetWords(db))
+	g.POST("/words", middleware.VerifyToken(), w.AddWord(db))
+	g.PUT("/words/:id", middleware.VerifyToken(), w.UpdateWord(db))
+	g.DELETE("/words/:id", middleware.VerifyToken(), w.DeleteWord(db))
+	g.GET("/words/favorite", middleware.VerifyToken(), w.GetFavoriteWords(db))
+}
 
 // GetWords godoc
 // @Summary      Get words
@@ -22,7 +34,7 @@ import (
 // @Success      200  {object}  []model.Word
 // @Failure      500  {object}  httputil.HTTPError
 // @Router       /v1/words [get]
-func GetWords(db *gorm.DB) gin.HandlerFunc {
+func (w *Word) GetWords(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var wordModel model.Word
 		words, err := wordModel.GetVocabularies(db)
@@ -46,7 +58,7 @@ func GetWords(db *gorm.DB) gin.HandlerFunc {
 // @Success      200  {object}  []model.Word
 // @Failure      500  {object}  httputil.HTTPError
 // @Router       /v1/words [get]
-func GetFavoriteWords(db *gorm.DB) gin.HandlerFunc {
+func (w *Word) GetFavoriteWords(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userInfo := c.MustGet("userInfo").(model.User)
 		favoriteModel := model.Favorite{UserId: userInfo.Id}
@@ -73,7 +85,7 @@ func GetFavoriteWords(db *gorm.DB) gin.HandlerFunc {
 // @Failure      400  {object}  httputil.HTTPError
 // @Failure      500  {object}  httputil.HTTPError
 // @Router       /v1/words [post]
-func AddWord(db *gorm.DB) gin.HandlerFunc {
+func (w *Word) AddWord(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		decoder := json.NewDecoder(c.Request.Body)
 		var word model.Word
@@ -125,7 +137,7 @@ func AddWord(db *gorm.DB) gin.HandlerFunc {
 // @Failure      400  {object}  httputil.HTTPError
 // @Failure      500  {object}  httputil.HTTPError
 // @Router       /v1/words/{id} [put]
-func UpdateWord(db *gorm.DB) gin.HandlerFunc {
+func (w *Word) UpdateWord(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
@@ -190,7 +202,7 @@ func UpdateWord(db *gorm.DB) gin.HandlerFunc {
 // @Failure      400  {object}  httputil.HTTPError
 // @Failure      500  {object}  httputil.HTTPError
 // @Router       /v1/words/{id} [delete]
-func DeleteWord(db *gorm.DB) gin.HandlerFunc {
+func (w *Word) DeleteWord(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {

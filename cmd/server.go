@@ -4,10 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"github.com/hochitai/jpl/api/handler"
-	"github.com/hochitai/jpl/api/middleware"
 	"github.com/hochitai/jpl/docs"
 	"github.com/hochitai/jpl/internal/database"
 	"github.com/spf13/cobra"
@@ -54,40 +51,21 @@ var serverCmd = &cobra.Command{
 		docs.SwaggerInfo.BasePath = "/v2"
 		docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
-		r := gin.Default()
-		r.ForwardedByClientIP = true
-		r.SetTrustedProxies([]string{"127.0.0.1"})
-		r.LoadHTMLGlob("web/templates/*")
+		server := handler.Server{}
+		wordHandler := handler.Word{}
+		userHandler := handler.User{}
 
-		config := cors.DefaultConfig()
-  		config.AllowOrigins = []string{"http://localhost:8080"}
-		r.Use(cors.Default())
+		r := server.DefaultConfiguation()
 
 		// pages
-		r.GET("/", handler.HomePage(db))
+		r.GET("/", userHandler.HomePage(db))
 
 		// v1 rest api
 		v1 := r.Group("/v1")
-		{
-			// Word
-			v1.GET("/words", handler.GetWords(db))
-			v1.POST("/words", middleware.VerifyToken(), handler.AddWord(db))
-			v1.PUT("/words/:id", middleware.VerifyToken(), handler.UpdateWord(db))
-			v1.DELETE("/words/:id", middleware.VerifyToken(), handler.DeleteWord(db))
-			v1.GET("/words/favorite", middleware.VerifyToken(), handler.GetFavoriteWords(db))
+		userHandler.LoadAPIRouters(v1, db)
+		wordHandler.LoadAPIRouters(v1, db)
 
-			// User
-			v1.POST("/users/register", handler.AddUser(db))
-			v1.POST("/users/admin", middleware.VerifyTokenAndPermission(), handler.AddAdmin(db))
-			v1.POST("/users/login", handler.Login(db))
-			v1.POST("/users/token", middleware.RefreshToken())
-			v1.PUT("/users/:id", middleware.VerifyToken(), handler.UpdateUser(db))
-			v1.DELETE("/users/:id", middleware.VerifyTokenAndPermission(), handler.DeleteUser(db))
-
-			//Admin
-			v1.GET("/admin/users", middleware.VerifyTokenAndPermission(), handler.GetUsers(db))
-
-		}
+		// Load page swagger
 		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		r.Run()
 	},
