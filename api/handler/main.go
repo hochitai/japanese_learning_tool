@@ -15,6 +15,10 @@ import (
 
 type Server struct {}
 
+func NewServer() *Server {
+	return &Server{}
+}
+
 func (s *Server) DefaultConfiguation() *gin.Engine {
 	r := gin.Default()
 	r.ForwardedByClientIP = true

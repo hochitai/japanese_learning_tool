@@ -51,9 +51,9 @@ var serverCmd = &cobra.Command{
 		docs.SwaggerInfo.BasePath = "/v2"
 		docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
-		server := handler.Server{}
-		wordHandler := handler.Word{}
-		userHandler := handler.User{}
+		server := handler.NewServer()
+		wordHandler := handler.NewWordService()
+		userHandler := handler.NewUserService()
 
 		r := server.DefaultConfiguation()
 

@@ -20,6 +20,10 @@ import (
 
 type User struct {}
 
+func NewUserService() *User {
+	return &User{}
+}
+
 func (u *User) LoadAPIRouters(g *gin.RouterGroup, db *gorm.DB) {
 	// User
 	g.POST("/users/register", u.AddUser(db))

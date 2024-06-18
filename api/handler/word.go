@@ -15,6 +15,10 @@ import (
 
 type Word struct {}
 
+func NewWordService() *Word {
+	return &Word{}
+}
+
 func (w *Word) LoadAPIRouters(g *gin.RouterGroup, db *gorm.DB) {
 	// Word
 	g.GET("/words", w.GetWords(db))
