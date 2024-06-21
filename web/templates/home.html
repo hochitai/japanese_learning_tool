@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Learning Japanese</title>
+  </head>
+  <body>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+      }
+
+      #app {
+        width: 100%;
+        height: 100%;
+        background-color: rgb(245, 245, 245);
+        padding-bottom: 20px;
+      }
+
+      header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: black;
+        padding: 15px 0;
+        color: white;
+        font-size: 18px;
+      }
+
+      header .title {
+        width: 1000px;
+        margin: 0 auto;
+        cursor: pointer;
+      }
+
+      main {
+        width: 1000px;
+        margin: 0 auto;
+        padding-top: 70px;
+      }
+
+      main .introduction {
+        background-color: white;
+        padding: 16px;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+        margin-bottom: 20px;
+      }
+
+      main .introduction .title {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+
+      main .content {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      main .result {
+        width: 240px;
+        padding: 10px 60px;
+        margin: 30px auto;
+        border-radius: 4px;
+        background-color: grey;
+        color: white;
+        opacity: 0.6;
+        text-align: center;
+        line-height: 20px;
+      }
+
+      main .result.correct {
+        background-color: green;
+        color: white;
+      }
+
+      main .result.incorrect {
+        background-color: red;
+        color: white;
+      }
+
+      main .question {
+        font-size: 68px;
+        text-align: center;
+      }
+
+      main .answers {
+        list-style: none;
+        user-select: none;
+        display: flex;
+        justify-content: center;
+        margin: 30px auto;
+      }
+
+      main .answer {
+        background-color: white;
+        padding: 10px 30px;
+        font-size: 28px;
+        width: 30px;
+        text-align: center;
+        border-radius: 4px;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+      }
+
+      main .answer + .answer {
+        margin-left: 44px;
+      }
+
+      main .answer:hover {
+        background-color: rgb(242, 242, 242);
+        cursor: pointer;
+      }
+
+      .error {
+        color: red;
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .left-side {
+        margin-right: 14px;
+      }
+
+      .right-side {
+        margin-left: 14px;
+      }
+
+      .choose-characters {
+        flex: 1;
+        background-color: white;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+        height: 100%;
+      }
+
+      .choose-characters .title {
+        padding: 8px 16px;
+        font-weight: bold;
+        background-color: rgb(242, 242, 242);
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+      }
+      .choose-characters .options {
+        list-style: none;
+        padding: 6px;
+      }
+
+      .choose-characters .option > label {
+        display: flex;
+        line-height: 16px;
+        padding: 6px 4px;
+      }
+
+      .choose-characters .option:hover > label {
+        background-color: rgb(242, 242, 242);
+        cursor: pointer;
+      }
+
+      .choose-characters .option:active .jp-romaji {
+        display: none;
+      }
+
+      .choose-characters .option:active .jp-original {
+        display: block;
+      }
+
+      .choose-characters .option + .option {
+        border-top: 1px solid rgba(0, 0, 0, 0.04);
+      }
+
+      .choose-characters .option .content {
+        margin-left: 10px;
+        font-weight: bold;
+      }
+
+      .choose-characters .option .jp-original {
+        display: none;
+        font-size: 14px;
+      }
+
+      .choose-characters .more-options #left-side-alternative,
+      .choose-characters .more-options #right-side-alternative,
+      .choose-characters .more-options #right-side-lookalike {
+        display: none;
+      }
+      .choose-characters .more-options #left-side-alternative + .option-label label .up-arrow,
+      .choose-characters .more-options #left-side-alternative + .option-label label .down-arrow,
+      .choose-characters .more-options #right-side-alternative + .option-label label .up-arrow,
+      .choose-characters .more-options #right-side-alternative + .option-label label .down-arrow,
+      .choose-characters .more-options #right-side-lookalike + .option-label label .up-arrow,
+      .choose-characters .more-options #right-side-lookalike + .option-label label .down-arrow {
+        font-size: 12px;
+        margin: 0 6px;
+      }
+
+      .choose-characters .more-options #left-side-alternative:checked + .option-label label .down-arrow,
+      .choose-characters .more-options #left-side-alternative + .option-label label .up-arrow,
+      .choose-characters .more-options #right-side-alternative:checked + .option-label label .down-arrow,
+      .choose-characters .more-options #right-side-alternative + .option-label label .up-arrow,
+      .choose-characters .more-options #right-side-lookalike:checked + .option-label label .down-arrow,
+      .choose-characters .more-options #right-side-lookalike + .option-label label .up-arrow {
+        display: none;
+      }
+
+      .choose-characters .more-options #left-side-alternative:checked + .option-label label .up-arrow,
+      .choose-characters .more-options #right-side-alternative:checked + .option-label label .up-arrow,
+      .choose-characters .more-options #right-side-lookalike:checked + .option-label label .up-arrow {
+        display: block;
+      }
+
+      .choose-characters .more-options .option-label label {
+        display: flex;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .choose-characters .more-options > .option-label {
+        display: flex;
+        line-height: 16px;
+        padding: 8px 4px;
+      }
+
+      .choose-characters .option-label:hover {
+        background-color: rgb(242, 242, 242);
+        cursor: pointer;
+      }
+
+      .choose-characters .more-options .alt-options {
+        display: none;
+        list-style: none;
+        background-color: rgb(250, 250, 250);
+      }
+
+      .choose-characters .more-options #left-side-alternative:checked ~ .alt-options,
+      .choose-characters .more-options #right-side-alternative:checked ~ .alt-options,
+      .choose-characters .more-options #right-side-lookalike:checked ~ .alt-options {
+        display: block;
+      }
+
+      .choose-characters .more-options .alternative-option label {
+        padding: 8px 4px;
+        padding-left: 20px;
+      }
+
+      .choose-characters .more-options .alt-options .divider-row {
+        border-bottom: 2px solid #ddd;
+      }
+
+      .choose-characters .features {
+        list-style: none;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: rgb(242, 242, 242);
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+        border-top: 1px solid rgba(0, 0, 0, 0.2);
+      }
+
+      .choose-characters .features ul {
+        padding: 0 10px;
+        color: rgb(102, 102, 231);
+        cursor: pointer;
+      }
+
+      .access {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .access button {
+        color: white;
+        background-color: firebrick;
+        opacity: 0.8;
+        text-align: center;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .access button:hover {
+        opacity: 1;
+      }
+    </style>
+    <div id="app">
+      <header></header>
+
+      <main></main>
+
+      <footer></footer>
+
+      <script>
+        const hiragana = {
+          o: [
+            ['a', 'i', 'u', 'e', 'o'],
+            ['あ', 'い', 'う', 'え', 'お'],
+          ],
+          k: [
+            ['ka', 'ki', 'ku', 'ke', 'ko'],
+            ['か', 'き', 'く', 'け', 'こ'],
+          ],
+          s: [
+            ['sa', 'shi', 'su', 'se', 'so'],
+            ['さ', 'し', 'す', 'せ', 'そ'],
+          ],
+          t: [
+            ['ta', 'chi', 'tsu', 'te', 'to'],
+            ['た', 'ち', 'つ', 'て', 'と'],
+          ],
+          n: [
+            ['na', 'ni', 'nu', 'ne', 'no'],
+            ['な', 'に', 'ぬ', 'ね', 'の'],
+          ],
+          h: [
+            ['ha', 'hi', 'fu', 'he', 'ho'],
+            ['は', 'ひ', 'ふ', 'へ', 'ほ'],
+          ],
+          m: [
+            ['ma', 'mi', 'mu', 'me', 'mo'],
+            ['ま', 'み', 'む', 'め', 'も'],
+          ],
+          y: [
+            ['ya', 'yu', 'yo'],
+            ['や', 'ゆ', 'よ'],
+          ],
+          r: [
+            ['ra', 'ri', 'ru', 're', 'ro'],
+            ['ら', 'り', 'る', 'れ', 'ろ'],
+          ],
+          w: [
+            ['wa', 'wo', 'n'],
+            ['わ', 'を', 'ん'],
+          ],
+          alternative: {
+            g: [
+              ['ga', 'gi', 'gu', 'ge', 'go'],
+              ['が', 'ぎ', 'ぐ', 'げ', 'ご'],
+            ],
+            z: [
+              ['za', 'ji', 'zu', 'ze', 'zo'],
+              ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'],
+            ],
+            d: [
+              ['da', 'ji', 'zu', 'de', 'do'],
+              ['だ', 'ぢ', 'づ', 'で', 'ど'],
+            ],
+            b: [
+              ['ba', 'bi', 'bu', 'be', 'bo'],
+              ['ば', 'び', 'ぶ', 'べ', 'ぼ'],
+            ],
+            p_d: [
+              ['pa', 'pi', 'pu', 'pe', 'po'],
+              ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'],
+            ],
+            ky: [
+              ['kya', 'kyu', 'kyo'],
+              ['きゃ', 'きゅ', 'きょ'],
+            ],
+            sh: [
+              ['sha', 'shu', 'sho'],
+              ['しゃ', 'しゅ', 'しょ'],
+            ],
+            ch: [
+              ['cha', 'chu', 'cho'],
+              ['ちゃ', 'ちゅ', 'ちょ'],
+            ],
+            ny: [
+              ['nya', 'nyu', 'nyo'],
+              ['にゃ', 'にゅ', 'にょ'],
+            ],
+            hy: [
+              ['hya', 'hyu', 'hyo'],
+              ['ひゃ', 'ひゅ', 'ひょ'],
+            ],
+            my: [
+              ['mya', 'myu', 'myo'],
+              ['みゃ', 'みゅ', 'みょ'],
+            ],
+            ry: [
+              ['rya', 'ryu', 'ryo'],
+              ['りゃ', 'りゅ', 'りょ'],
+            ],
+            gy: [
+              ['gya', 'gyu', 'gyo'],
+              ['りゃ', 'りゅ', 'りょ'],
+            ],
+            ja: [
+              ['ja', 'ju', 'jo'],
+              ['じゃ', 'じゅ', 'じょ'],
+            ],
+            by: [
+              ['bya', 'byu', 'byo'],
+              ['びゃ', 'びゅ', 'びょ'],
+            ],
+            py: [
+              ['pya', 'pyu', 'pyo'],
+              ['ぴゃ', 'ぴゅ', 'ぴょ'],
+            ],
+          },
+        };
+
+        const katakana = {
+          o: [
+            ['a', 'i', 'u', 'e', 'o'],
+            ['ア', 'イ', 'ウ', 'エ', 'オ'],
+          ],
+          k: [
+            ['ka', 'ki', 'ku', 'ke', 'ko'],
+            ['カ', 'キ', 'ク', 'ケ', 'コ'],
+          ],
+          s: [
+            ['sa', 'shi', 'su', 'se', 'so'],
+            ['サ', 'シ', 'ス', 'セ', 'ソ'],
+          ],
+          t: [
+            ['ta', 'chi', 'tsu', 'te', 'to'],
+            ['タ', 'チ', 'ツ', 'テ', 'ト'],
+          ],
+          n: [
+            ['na', 'ni', 'nu', 'ne', 'no'],
+            ['ナ', 'ニ', 'ヌ', 'ネ', 'ノ'],
+          ],
+          h: [
+            ['ha', 'hi', 'fu', 'he', 'ho'],
+            ['ハ', 'ヒ', 'フ', 'ヘ', 'ホ'],
+          ],
+          m: [
+            ['ma', 'mi', 'mu', 'me', 'mo'],
+            ['マ', 'ミ', 'ム', 'メ', 'モ'],
+          ],
+          y: [
+            ['ya', 'yu', 'yo'],
+            ['ヤ', 'ユ', 'ヨ'],
+          ],
+          r: [
+            ['ra', 'ri', 'ru', 're', 'ro'],
+            ['ラ', 'リ', 'ル', 'レ', 'ロ'],
+          ],
+          w: [
+            ['wa', 'wo', 'n'],
+            ['ワ', 'ヲ', 'ン'],
+          ],
+          lookalike: {
+            a1: [
+              ['shi', 'tsu', 'so', 'n', 'no'],
+              ['シ', 'ツ', 'ソ', 'ン', 'ノ'],
+            ],
+            a2: [
+              [' u', 'fu', 'wa', 'ra', 'su', 'nu', 'wo'],
+              ['ウ', 'フ', 'ワ', 'ラ', 'ス', 'ヌ', 'ヲ'],
+            ],
+          },
+          alternative: {
+            g: [
+              ['ga', 'gi', 'gu', 'ge', 'go'],
+              ['ガ', 'ギ', 'グ', 'ゲ', 'ゴ'],
+            ],
+            z: [
+              ['za', 'ji', 'zu', 'ze', 'zo'],
+              ['ザ', 'ジ', 'ズ', 'ゼ', 'ゾ'],
+            ],
+            d: [
+              ['da', 'ji', 'zu', 'de', 'do'],
+              ['ダ', 'ヂ', 'ヅ', 'デ', 'ド'],
+            ],
+            b: [
+              ['ba', 'bi', 'bu', 'be', 'bo'],
+              ['バ', 'ビ', 'ブ', 'ベ', 'ボ'],
+            ],
+            p_d: [
+              ['pa', 'pi', 'pu', 'pe', 'po'],
+              ['パ', 'ピ', 'プ', 'ペ', 'ポ'],
+            ],
+            ky: [
+              ['kya', 'kyu', 'kyo'],
+              ['キャ', 'キュ', 'キョ'],
+            ],
+            sh: [
+              ['sha', 'shu', 'sho'],
+              ['シャ', 'シュ', 'ショ'],
+            ],
+            ch: [
+              ['cha', 'chu', 'cho'],
+              ['チャ', 'チュ', 'チョ'],
+            ],
+            ny: [
+              ['nya', 'nyu', 'nyo'],
+              ['ニャ', 'ニュ', 'ニョ'],
+            ],
+            hy: [
+              ['hya', 'hyu', 'hyo'],
+              ['ヒャ', 'ヒュ', 'ヒョ'],
+            ],
+            my: [
+              ['mya', 'myu', 'myo'],
+              ['ミャ', 'ミュ', 'ミョ'],
+            ],
+            ry: [
+              ['rya', 'ryu', 'ryo'],
+              ['リャ', 'リュ', 'リョ'],
+            ],
+            gy: [
+              ['gya', 'gyu', 'gyo'],
+              ['ギャ', 'ギュ', 'ギョ'],
+            ],
+            ja: [
+              ['ja', 'ju', 'jo'],
+              ['ジャ', 'ジュ', 'ジョ'],
+            ],
+            by: [
+              ['bya', 'byu', 'byo'],
+              ['ビャ', 'ビュ', 'ビョ'],
+            ],
+            py_d: [
+              ['pya', 'pyu', 'pyo'],
+              ['ピャ', 'ピュ', 'ピョ'],
+            ],
+            f: [
+              ['fa', 'fi', 'fe', 'fo', 'fyu'],
+              ['ファ', 'フィ', 'フェ', 'フォ', 'フュ'],
+            ],
+            v: [
+              ['wi', 'we', 'wo', 'va', 'vi', 've', 'vo'],
+              ['ウィ', 'ウェ', 'ウォ', 'ヴァ', 'ヴィ', 'ヴェ', 'ヴォ'],
+            ],
+            ts: [
+              ['tsa', 'tsi', 'tse', 'tso'],
+              ['ツァ', 'ツィ', 'ツェ', 'ツォ'],
+            ],
+            csj: [
+              ['che', 'she', 'je'],
+              ['チェ', 'シェ', 'ジェ'],
+            ],
+            td: [
+              ['ti', 'di', 'du', 'tu'],
+              ['ティ', 'ディ', 'デュ', 'トゥ'],
+            ],
+          },
+        };
+
+        var header = document.querySelector('header');
+        var main = document.querySelector('main');
+        function homePage() {
+          hiraganaPratice = [];
+          katakanaPratice = [];
+
+          header.innerHTML = '<div class="title">JPL</div>';
+          main.innerHTML = `
+          <div class="introduction">
+                  <div class="title">Welcome to JPL!</div>
+                  <div class="description">Please choose the groups of characters that you'd like to be studying.</div>
+                </div>
+                <div class="content">
+                  <div class="choose-characters left-side">
+                    <div class="title">Hiragana · ひらがな</div>
+                    <li class="options">
+
+                    </li>
+                    <li class="features">
+                      <ul>
+                        All
+                      </ul>
+                      ·
+                      <ul>
+                        None
+                      </ul>
+                      ·
+                      <ul>
+                        All alternative
+                      </ul>
+                      ·
+                      <ul>
+                        No alternative
+                      </ul>
+                    </li>
+                  </div>
+                  <div class="choose-characters right-side">
+                    <div class="title">Katakana · カタカナ</div>
+                    <li class="options">
+
+                    </li>
+                    <li class="features">
+                      <ul>
+                        All
+                      </ul>
+                      ·
+                      <ul>
+                        None
+                      </ul>
+                      ·
+                      <ul>
+                        All alternative
+                      </ul>
+                      ·
+                      <ul>
+                        No alternative
+                      </ul>
+                    </li>
+                  </div>
+                </div>
+                <div class="error"></div>
+                <div class="access" onclick="quiz()">
+                  <button>Start the Quiz</button>
+                </div>`;
+
+          var hiraganaSide = document.querySelector('.left-side li.options');
+          var katakanaSide = document.querySelector('.right-side li.options');
+
+          var index = 0;
+          for (var key in hiragana) {
+            if (key == 'alternative') {
+              var context = `<ul class="more-options">
+                    <input type="checkbox" name="" id="left-side-alternative" />
+                    <div class="option-label">
+                      <input type="checkbox" name="" />
+                      <label for="left-side-alternative">
+                        <div class="content up-arrow">▲</div>
+                        <div class="content down-arrow">▼</div>
+                        <div class="content">Alternative characters (ga · ba · kya..)</div>
+                      </label>
+                    </div>
+                    <li class="alt-options">`;
+              let index = 0;
+              for (var innerKey in hiragana[key]) {
+                var dividerClass = '';
+                if (innerKey.includes('_d')) {
+                  dividerClass = 'divider-row';
+                }
+                let content = `<ul class="option alternative-option ${dividerClass}">
+                        <label for="check-alt-${index}">
+                          <input type="checkbox" name="" id="check-alt-${index}"  onclick="toggleHigarana('${innerKey}')"/>
+                          <div class="content jp-romaji">${hiragana[key][innerKey][0].join(' · ')}</div>
+                          <div class="content jp-original">${hiragana[key][innerKey][1].join(' · ')}</div>
+                        </label>
+                      </ul>`;
+                context += content;
+                index += 1;
+              }
+              context += '</li></ul>';
+              let alternativeContent = new DOMParser().parseFromString(context, 'text/html');
+              hiraganaSide.append(alternativeContent.body.firstChild);
+            } else {
+              let content = new DOMParser().parseFromString(
+                `<ul class="option">
+                  <label for="check-${index}" >
+                    <input type="checkbox" name="" id="check-${index}" onclick="toggleHigarana('${key}')"/>
+                    <div class="content jp-romaji">${hiragana[key][0].join(' · ')}</div>
+                    <div class="content jp-original">${hiragana[key][1].join(' · ')}</div>
+                  </label>
+                </ul>`,
+                'text/html'
+              );
+              index += 1;
+              hiraganaSide.append(content.body.firstChild);
+            }
+          }
+
+          for (var key in katakana) {
+            if (key == 'lookalike') {
+              var context = `<ul class="more-options">
+                    <input type="checkbox" name="" id="right-side-lookalike" />
+                    <div class="option-label">
+                      <input type="checkbox" name="" />
+                      <label for="right-side-lookalike">
+                        <div class="content up-arrow">▲</div>
+                        <div class="content down-arrow">▼</div>
+                        <div class="content">Look-alike characters</div>
+                      </label>
+                    </div>
+                    <li class="alt-options">`;
+              let index = 0;
+              for (var innerKey in katakana[key]) {
+                var dividerClass = '';
+                if (innerKey.includes('_d')) {
+                  dividerClass = 'divider-row';
+                }
+                let content = `<ul class="option alternative-option ${dividerClass}">
+                        <label for="check-alt-look-${index}">
+                          <input type="checkbox" name="" id="check-alt-look-${index}" onclick="toggleKatakana('${innerKey}')"/>
+                          <div class="content jp-romaji">${katakana[key][innerKey][0].join(' · ')}</div>
+                          <div class="content jp-original">${katakana[key][innerKey][1].join(' · ')}</div>
+                        </label>
+                      </ul>`;
+                context += content;
+                index += 1;
+              }
+              context += '</li></ul>';
+              let alternativeContent = new DOMParser().parseFromString(context, 'text/html');
+              katakanaSide.append(alternativeContent.body.firstChild);
+            } else if (key == 'alternative') {
+              var context = `<ul class="more-options">
+                    <input type="checkbox" name="" id="right-side-alternative" />
+                    <div class="option-label">
+                      <input type="checkbox" name="" />
+                      <label for="right-side-alternative">
+                        <div class="content up-arrow">▲</div>
+                        <div class="content down-arrow">▼</div>
+                        <div class="content">Alternative characters (ga · ba · kya..)</div>
+                      </label>
+                    </div>
+                    <li class="alt-options">`;
+              let index = 0;
+              for (var innerKey in katakana[key]) {
+                var dividerClass = '';
+                if (innerKey.includes('_d')) {
+                  dividerClass = 'divider-row';
+                }
+                let content = `<ul class="option alternative-option ${dividerClass}">
+                        <label for="check-alt-second-${index}">
+                          <input type="checkbox" name="" id="check-alt-second-${index}" onclick="toggleKatakana('${innerKey}')"/>
+                          <div class="content jp-romaji">${katakana[key][innerKey][0].join(' · ')}</div>
+                          <div class="content jp-original">${katakana[key][innerKey][1].join(' · ')}</div>
+                        </label>
+                      </ul>`;
+                context += content;
+                index += 1;
+              }
+              context += '</li></ul>';
+              let alternativeContent = new DOMParser().parseFromString(context, 'text/html');
+              katakanaSide.append(alternativeContent.body.firstChild);
+            } else {
+              let content = new DOMParser().parseFromString(
+                `<ul class="option">
+                  <label for="check-${index}">
+                    <input type="checkbox" name="" id="check-${index}" onclick="toggleKatakana('${key}')"/>
+                    <div class="content jp-romaji">${katakana[key][0].join(' · ')}</div>
+                    <div class="content jp-original">${katakana[key][1].join(' · ')}</div>
+                  </label>
+                </ul>`,
+                'text/html'
+              );
+              index += 1;
+              katakanaSide.append(content.body.firstChild);
+            }
+          }
+        }
+
+        var hiraganaPratice = [];
+        var katakanaPratice = [];
+
+        function toggleHigarana(key) {
+          if (hiragana.hasOwnProperty(key)) {
+            if (hiraganaPratice.includes(key)) {
+              hiraganaPratice = hiraganaPratice.filter((e) => e !== key);
+            } else {
+              hiraganaPratice.push(key);
+            }
+          } else if (hiragana['alternative'].hasOwnProperty(key)) {
+            if (hiraganaPratice.includes(key)) {
+              hiraganaPratice = hiraganaPratice.filter((e) => e !== key);
+            } else {
+              hiraganaPratice.push(key);
+            }
+          }
+          console.log(hiraganaPratice);
+        }
+
+        function toggleKatakana(key) {
+          if (katakana.hasOwnProperty(key)) {
+            if (katakanaPratice.includes(key)) {
+              katakanaPratice = katakanaPratice.filter((e) => e !== key);
+            } else {
+              katakanaPratice.push(key);
+            }
+          } else if (katakana['alternative'].hasOwnProperty(key)) {
+            if (katakanaPratice.includes(key)) {
+              katakanaPratice = katakanaPratice.filter((e) => e !== key);
+            } else {
+              katakanaPratice.push(key);
+            }
+          } else if (katakana['lookalike'].hasOwnProperty(key)) {
+            if (katakanaPratice.includes(key)) {
+              katakanaPratice = katakanaPratice.filter((e) => e !== key);
+            } else {
+              katakanaPratice.push(key);
+            }
+          }
+          console.log(katakanaPratice);
+        }
+
+        let arrWord = [];
+        let activeNum = 0;
+        let practiceWords = [];
+
+        function quiz() {
+          if (hiraganaPratice.length == 0 && katakanaPratice.length == 0) {
+            let error = document.querySelector('.error');
+            error.innerHTML = `<div>Choose at least one group!</div>`;
+            return;
+          }
+          practiceWords = [];
+          for (key of hiraganaPratice) {
+            let words = [];
+            if (hiragana.hasOwnProperty(key)) {
+              words = hiragana[key];
+            } else {
+              words = hiragana['alternative'][key];
+            }
+            for (let i = 0; i < words[0].length; i++) {
+              practiceWords.push({ word: words[1][i], value: words[0][i] });
+            }
+          }
+          for (key of katakanaPratice) {
+            let words = [];
+            if (katakana.hasOwnProperty(key)) {
+              words = katakana[key];
+            } else if (katakana['alternative'].hasOwnProperty(key)) {
+              words = katakana['alternative'][key];
+            } else {
+              words = katakana['lookalike'][key];
+            }
+            for (let i = 0; i < words[0].length; i++) {
+              practiceWords.push({ word: words[1][i], value: words[0][i] });
+            }
+          }
+          console.log(practiceWords);
+          header.innerHTML = '<div class="title" onclick="homePage()">Back to menu</div>';
+          createQuestion(`<div class="result">Let's go! Which character is this?</div>`);
+        }
+
+        function createQuestion(result) {
+          arrWord = [];
+          while (arrWord.length < 3) {
+            if (practiceWords.length < 3) {
+              break;
+            }
+            let num = Math.floor(Math.random() * practiceWords.length);
+            if (!arrWord.includes(num)) {
+              arrWord.push(num);
+            }
+          }
+          activeNum = Math.floor(Math.random() * 3);
+
+          console.log(arrWord);
+          console.log(activeNum);
+
+          main.innerHTML = `${result}
+                            <div class="question">${practiceWords[arrWord[activeNum]].word}</div>
+                            <li class="answers">
+                              <ul class="answer" onclick=answer("${practiceWords[arrWord[0]].value}")>
+                                ${practiceWords[arrWord[0]].value}
+                              </ul>
+                              <ul class="answer" onclick=answer("${practiceWords[arrWord[1]].value}")>
+                                ${practiceWords[arrWord[1]].value}
+                              </ul>
+                              <ul class="answer" onclick=answer("${practiceWords[arrWord[2]].value}")>
+                                ${practiceWords[arrWord[2]].value}
+                              </ul>
+                            </li>`;
+        }
+
+        function answer(value) {
+          let result = '';
+          if (value == practiceWords[arrWord[activeNum]].value) {
+            result = `<div class="result correct">${practiceWords[arrWord[activeNum]].word} = ${
+              practiceWords[arrWord[activeNum]].value
+            }</div>`;
+          } else {
+            result = `<div class="result incorrect">${practiceWords[arrWord[activeNum]].word} = ${
+              practiceWords[arrWord[activeNum]].value
+            }</div>`;
+          }
+          createQuestion(result);
+        }
+
+        // quiz();
+        homePage();
+      </script>
+    </div>
+  </body>
+</html>

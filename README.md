@@ -23,6 +23,14 @@ It's also a REST API Server, Build with [Gin](https://github.com/gin-gonic/gin),
 
 ![swagger](demo/swagger.png)
 
+##### Home
+
+![swagger](demo/home.png)
+
+##### Quiz
+
+![swagger](demo/quiz.png)
+
 ## Installing
 
 ```bash

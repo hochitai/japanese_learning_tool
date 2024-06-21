@@ -290,8 +290,8 @@ func (u *User) GetUsers(db *gorm.DB) gin.HandlerFunc {
 
 func (u *User) HomePage(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.HTML(http.StatusOK, "auth.tmpl", gin.H{
-			"title": "Main website",
+		c.HTML(http.StatusOK, "home.html", gin.H{
+			"title": "JPL Home",
 		})
 	}
 }
